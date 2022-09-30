@@ -1,0 +1,38 @@
+# coding: utf-8
+
+
+target 'POD_NAME' do
+    platform :ios, '11.0'
+    podspec :path => '../POD_NAME.podspec.json'
+    # 支持podspec和podspec.json格式
+    defaultSpecPath = '../POD_NAME.podspec'
+    jsonSpecPath = '../POD_NAME.podspec.json'
+    if File.exist?(jsonSpecPath)
+        podspec :path => jsonSpecPath
+    elsif File.exist?(defaultSpecPath)
+        podspec :path => defaultSpecPath
+    end
+
+    # dependency_branch = ENV["MainProjectBranch"]
+
+    post_install do |installer|
+         # 为所有的taget配置添加统一的编译配置
+        installer.pods_project.targets.each do |target|
+            target.build_configurations.each do |config|
+                #最低支持iOS版本
+                config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '10.0'
+                #关闭注释中的警告
+                config.build_settings['CLANG_WARN_DOCUMENTATION_COMMENTS'] = 'NO'
+                #无返回值的直接报错误
+                config.build_settings['GCC_WARN_ABOUT_RETURN_TYPE'] = 'YES_ERROR'
+                #关闭关于nullability相关错误
+                config.build_settings['CLANG_ANALYZER_NONNULL'] = 'NO'
+                #添加预编译宏
+                config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= ['$(inherited)', 'TBDW_BUILD_ICBU=1']
+                # 统一设置所有组件支持非Modular引用
+                config.build_settings['CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES'] = 'YES'
+
+            end
+        end
+    end
+end
